@@ -1,0 +1,21 @@
+[project]
+name = "machine-learning-as-yaml"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "tomas", email = "tomas.baublys32@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "pyyaml>=6.0.3",
+    "torch>=2.14.0",
+    "torchvision>=0.29.0",
+]
+
+[project.scripts]
+machine-learning-as-yaml = "machine_learning_as_yaml:main"
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
