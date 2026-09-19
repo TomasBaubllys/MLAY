@@ -41,7 +41,7 @@ model:
                         stride: 2
                         padding: 3
           - backbone:
-                  indexes: [ 0, "Conv2d" ]
+                  indexes: [ 0, "backbone", "Conv2d" ]
                   with: Conv2d
                   kwargs:
                         in_channels: 3

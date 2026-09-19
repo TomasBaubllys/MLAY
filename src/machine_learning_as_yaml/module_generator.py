@@ -124,7 +124,15 @@ class ModuleGenerator:
                 # replace it
                 final_idx: int | str = replacement_indexes[-1]
                 if hasattr(temp_module, "__setitem__"):
-                    temp_module[final_idx] = replacement_object
+                    try:
+                        temp_module[final_idx] = replacement_object
+                    except:
+                        resolved_last_idx: int = self._get_index_from_name(temp_module, final_idx)
+                        if resolved_last_idx == -1:
+                            sys.stderr.write(f"Could not find object named {final_idx} to replace")
+                            continue
+                        temp_module[resolved_last_idx] = replacement_object
+
                 elif hasattr(temp_module, "features"):
                     temp_module.features[replacement_indexes[-1]] = replacement_object
                 else:
@@ -248,7 +256,6 @@ class ModuleGenerator:
                 if isinstance(value, dict) and len(value) == 1:
                     child_key, child_value = next(iter(value.items()))
                     constructed_child_obj: Any = self._construct_dynamic_class(child_key, child_value)
-                    # parsed_data[child_key] = constructed_child_obj
                     parsed_data[key] = constructed_child_obj
                     continue
 
@@ -266,3 +273,10 @@ class ModuleGenerator:
 
     def _get_replace_list(self) -> dict:
         return self.config.get("model", {}).get("replace", [])
+
+    def _get_index_from_name(self, data: list, target: str) -> int:
+        for index, obj in enumerate(data):
+            if type(obj).__name__.casefold() == target.casefold():
+                return index
+
+        return None
