@@ -1,0 +1,41 @@
+model:
+  name: MLAY
+  init_args:
+    num_classes: 10
+
+  structure:
+    backbone:
+      - Sequental:
+          Conv2d:
+              in_channels: 3
+              out_channels: 16
+              kernel_size: 3
+              stride: 2
+              padding: 1
+          BatchNorm2d:
+              num_features: 16
+          ReLU:
+              in_place: True
+          Conv2d:
+              in_channels: 16
+              out_channels: 32
+              kernel_size: 3
+              stride: 2
+              padding: 1
+          BatchNorm2d:
+              num_features: 32
+          ReLU:
+              in_place: True
+          AdaptiveAvgPool2d:
+              output: [1, 1]
+          Flatten:
+          Linear:
+            in_features: 32
+            out_features: num_classes
+    forward:
+      - backbone
+    
+
+
+
+          
