@@ -144,7 +144,7 @@ class ModuleGenerator:
     def _is_class_type(self, data_name: str) -> bool:
         if len(data_name) == 0:
             return False
-        return data_name[0].isupper()
+        return self._get_class_name(data_name)[0].isupper()
 
     def _split_import_path(self, data_name: str) -> list:
         return data_name.strip().split(".")
