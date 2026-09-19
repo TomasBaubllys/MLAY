@@ -1,12 +1,17 @@
 import yaml
+import torch
 import torch.nn as nn
-#from machine_learning_as_yaml.constants import ClsConstants
-from typing import Any
+from typing import Any, Type
 import importlib
 import sys
-from copy import deepcopy
 
-class ModuleGenerator():
+from enum import Enum
+
+class ModuleGeneratorConstants(Enum):
+    # This name is reserved for including other config files inside your config file as generators
+    CONFIG_CLASS_NAME: str = "MLAY__"
+
+class ModuleGenerator:
     def __init__(self, config_file: str):
         self.config: dict = {}
         with open(config_file, "r") as f:
@@ -14,41 +19,84 @@ class ModuleGenerator():
 
         self.imports: dict[str, object] = {}
         self._handle_imports()
+        self.ConstructedClass: nn.Module = None
 
-    def construct_module(self) -> nn.Module:
+    def _construct_class(self) -> Type[nn.Module]:
         module_name: str = self.config.get("model", {}).get("name", )
-        backbone_module: nn.Module = self._construct_backbone()
+        computational_modules: dict = {}
+
+        for name, value in self.config.get("model", {}).get("structure", {}).items():
+            if isinstance(value, dict) and len(value) == 1:
+                class_key, class_value = next(iter(value.items()))
+                computational_modules[name] = self._construct_dynamic_class(class_key, class_value)
 
         DynamicModuleClass: nn.Module = type(
             module_name,
             (nn.Module,),
             {
-                "__init__": self.construct_init(backbone_module),
-                "forward": self.construct_forward(),
+                "__init__": self._construct_init(computational_modules),
+                "forward": self._construct_forward(),
             }
         )
 
-        return DynamicModuleClass()
+        self.ConstructedClass = DynamicModuleClass
+        return DynamicModuleClass
 
-    def construct_forward(self) -> callable:
-        def _forward(self_inst, x):
-            return self_inst.backbone(x)
-        return _forward
+    def get_module_class(self) -> type: 
+        if self.ConstructedClass is not None:
+            return self.ConstructedClass
 
-    def construct_init(self, backbone: nn.Module) -> callable:
-        def _init(self_inst):
-            super(type(self_inst), self_inst).__init__()
-            self_inst.backbone = backbone
-        return _init
+        return self._construct_class()
 
-    # backbone is expected to be defined as a dictionary of 1 element
-    def _construct_backbone(self) -> nn.Module:
-        backbone_data: dict = self.config.get("model", {}).get("structure", {}).get("backbone", {})
+    def _construct_forward(self) -> callable:
+        # Case when forward is provided as set of modules
+        forward_dec: list[str] = self.config.get("model", {}).get("forward", None)
+        if forward_dec is not None:
+            def _forward(self_inst, x):
+                for comp_mod in forward_dec:
+                    module: nn.Module = getattr(self_inst, comp_mod)
+                    x = module(x)
+                return x
+                
+            return _forward
 
-        for key, value in backbone_data.items():
-            constructed_backbone: nn.Module = self._construct_dynamic_class(key, value)
+        # Case when forward is provided as a raw string
+        forward_dec_code: str = self.config.get("model", {}).get("forward_code", None)
+        if forward_dec_code is not None:
+            local_objects: dict = {}
+            full_code: str = "def _forward(self, x: torch.Tensor) -> torch.Tensor:\n"
+            for line in forward_dec_code.strip().split("\n"):
+                full_code += f"  {line}\n"
+            exec(full_code, self.imports, local_objects)
+            return local_objects["_forward"]
+
+        raise ValueError("Either 'forward' (list) or 'forward_code' (string) must be defined in the YAML model config!")
         
-        return constructed_backbone
+    def _construct_init(self, modules: dict[str, nn.Module]) -> callable:
+        init_args: dict = self._get_init_args()
+        init_code: str = self.config.get("model", {}).get("init_code", None)
+
+        def _init(self_inst, *args, **kwargs):
+            super(type(self_inst), self_inst).__init__()
+            for module_name, module in modules.items():
+                setattr(self_inst, module_name, module)
+
+            final_args: dict = {**init_args, **kwargs}
+
+            for key, value in final_args.items():
+                setattr(self_inst, key, value)
+
+            if init_code:
+                full_code: str = "def _custom_init(self):\n"
+                for line in init_code.strip().split("\n"):
+                    full_code += f"    {line}\n"
+
+                local_bindings: dict = {}
+                exec(full_code, self.imports, local_bindings)
+                custom_init: callable = local_bindings["_custom_init"]
+                custom_init(self_inst)
+
+        return _init
 
     # All types that start with upper case are considered classes and should start with upper case letter
     def _is_class_type(self, data_name: str) -> bool:
@@ -109,9 +157,11 @@ class ModuleGenerator():
         class_name: str = self._get_class_name(data_name)
 
         # check if the module is defined by another config file
-        if class_name == "MLAY":
+        if class_name == ModuleGeneratorConstants.CONFIG_CLASS_NAME.value:
             module_generator: ModuleGenerator = ModuleGenerator(data)
-            return module_generator.construct_module()
+            SubModuleClass: Type[nn.Module] = module_generator.get_module_class()
+            submodule_object: nn.Module = SubModuleClass(**module_generator._get_init_args())
+            return submodule_object
 
         import_path: str = self._get_parent_import(data_name)
         # If no import path is provided assume it is a torch.nn import
@@ -126,12 +176,12 @@ class ModuleGenerator():
         DynamicClass: Any = getattr(importer, class_name)
         if isinstance(data, dict):
 
-            init_args: dict = self.config.get("model", {}).get("init_args", {})
+            constants: dict = self._get_constants()
             resolved_data: dict = {}
 
             for key, value in data.items():
-                if isinstance(value, str) and value in init_args:
-                    resolved_data[key] = init_args[value]
+                if isinstance(value, str) and value in constants:
+                    resolved_data[key] = constants[value]
                     continue
                 resolved_data[key] = value
             return DynamicClass(**resolved_data)
@@ -173,3 +223,9 @@ class ModuleGenerator():
 
         # After constructing nested class 
         return self._construct_dynamic_class_unnested(data_name, parsed_data)
+
+    def _get_constants(self) -> dict:
+        return self.config.get("constants", {})
+
+    def _get_init_args(self) -> dict:
+        return self.config.get("model", {}).get("init_args", {})

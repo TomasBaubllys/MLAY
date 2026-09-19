@@ -7,8 +7,23 @@ model:
       init_args:
             num_classes: 10
 
+      # init_code does not need to be provided, except if you want custom init logic
+      init_code: |
+            if self.num_classes > 10:
+                  self.number = 123
+            else:
+                  self.number = 456
+
       structure:
             backbone:
                   Sequential:
-                      - MLAY: "../../examples/myModel1.yaml"
-                      - MLAY: "../../examples/myModel1.yaml"
+                      - MLAY__: "../../examples/myModel1.yaml"
+                      - MLAY__: "../../examples/myModel1.yaml"
+            custom_block:
+                  Linear:
+                        in_features: 64
+                        out_features: 64
+      forward_code: |
+            y = self.backbone(x)
+            y = self.custom_block(x)
+            return x + y

@@ -2,10 +2,15 @@ imports:
     - torch:
     - nn: torch.nn
 
+constants:
+      num_classes: 10
+
 model:
       name: MLAY1
       init_args:
-            num_classes: 10
+            var1:
+            var2: 10
+            var3: None
 
       structure:
             backbone:
@@ -36,3 +41,10 @@ model:
                       - Linear:
                               in_features: 32
                               out_features: num_classes
+            classifier:
+                  Linear:
+                        in_features: num_classes
+                        out_features: num_classes
+      forward:
+          - backbone
+          - classifier
