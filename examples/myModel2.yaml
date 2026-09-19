@@ -1,0 +1,14 @@
+imports:
+    - torch:
+    - nn: torch.nn
+
+model:
+      name: MLAY2
+      init_args:
+            num_classes: 10
+
+      structure:
+            backbone:
+                  Sequential:
+                      - MLAY: "../../examples/myModel1.yaml"
+                      - MLAY: "../../examples/myModel1.yaml"
