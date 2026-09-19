@@ -96,6 +96,40 @@ class ModuleGenerator:
                 custom_init: callable = local_bindings["_custom_init"]
                 custom_init(self_inst)
 
+            # Handle replacements
+            replacements: list = self._get_replace_list()
+            for replacement in replacements:
+                module_name, replacement_args = next(iter(replacement.items()))
+                if not hasattr(self_inst, module_name):
+                    sys.stderr.write(f"Module {module_name} not found in constructed class")
+
+                module: nn.Module = getattr(self_inst, module_name)
+
+                # Traverse throught the indexes except for the last one
+                temp_module: nn.Module = module
+                replacement_indexes: list = replacement_args.get("indexes", [])
+                for index in replacement_indexes[:-1]:
+                    if hasattr(temp_module, "__getitem__"):
+                        temp_module = temp_module[index]
+                    elif hasattr(temp_module, "features"):
+                        temp_module = temp_module.feature[index]
+                    else:
+                        temp_module = getattr(temp_module, str(index))
+
+                # construct the module
+                replacement_name: str = replacement_args.get("with")
+                replacement_kwargs: str = replacement_args.get("kwargs", {}) 
+                replacement_object: Type[nn.Module] = self._construct_dynamic_class(replacement_name, replacement_kwargs)
+
+                # replace it
+                final_idx: int | str = replacement_indexes[-1]
+                if hasattr(temp_module, "__setitem__"):
+                    temp_module[final_idx] = replacement_object
+                elif hasattr(temp_module, "features"):
+                    temp_module.features[replacement_indexes[-1]] = replacement_object
+                else:
+                    setattr(temp_module, str(final_idx), replacement_object)
+
         return _init
 
     # All types that start with upper case are considered classes and should start with upper case letter
@@ -229,3 +263,6 @@ class ModuleGenerator:
 
     def _get_init_args(self) -> dict:
         return self.config.get("model", {}).get("init_args", {})
+
+    def _get_replace_list(self) -> dict:
+        return self.config.get("model", {}).get("replace", [])

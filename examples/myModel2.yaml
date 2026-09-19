@@ -27,3 +27,25 @@ model:
             y = self.backbone(x)
             y = self.custom_block(x)
             return x + y
+
+      replace:
+          # index is provided as a list of indexes (mostly if backbone contains sequential, etc...) or you can speficy a name it will change the first match
+          # keep in mind replacements are the last thing to execute inside init function
+          - backbone:
+                  indexes: [ 1, 1 ]
+                  with: Conv2d
+                  kwargs:
+                        in_channels: 3
+                        out_channels: 16
+                        kernel_size: 5
+                        stride: 2
+                        padding: 3
+          - backbone:
+                  indexes: [ 0, "Conv2d" ]
+                  with: Conv2d
+                  kwargs:
+                        in_channels: 3
+                        out_channels: 16
+                        kernel_size: 7
+                        stride: 2
+                        padding: 3
