@@ -112,7 +112,7 @@ class ModuleGenerator:
                     if hasattr(temp_module, "__getitem__"):
                         temp_module = temp_module[index]
                     elif hasattr(temp_module, "features"):
-                        temp_module = temp_module.feature[index]
+                        temp_module = temp_module.features[index]
                     else:
                         temp_module = getattr(temp_module, str(index))
 
@@ -288,4 +288,4 @@ class ModuleGenerator:
             if type(obj).__name__.casefold() == target.casefold():
                 return index
 
-        return None
+        return -1
