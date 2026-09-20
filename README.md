@@ -123,7 +123,7 @@ structure:
 
 A few things worth calling out:
 - Values under a layer (like `in_channels`, `num_features`, etc.) map directly to that PyTorch module's constructor arguments.
-- `MLAY__` lets you compose models out of other `.mlay` YAML configs, so you can build re-usable sub-models and drop them into a bigger one.
+- `MLAY__` lets you compose models out of other MLAY YAML configs, so you can build re-usable sub-models and drop them into a bigger one.
 - Named entries (`backbone`, `classifier`, `custom_block`, etc.) become named submodules on your model, so they show up as `self.backbone`, `self.classifier`, and so on.
 
 #### `forward` / `forward_code`
