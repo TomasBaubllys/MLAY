@@ -182,6 +182,12 @@ class ModuleGenerator:
 
         return False
 
+    def _try_to_import(self, key: str, value: str) -> None:
+        try:
+            self.imports[key] = importlib.import_module(value)
+        except ImportError as e:
+            sys.stderr.write(f"Error while importing {value} as {key}, skipping: {e.msg}")
+
     # Each import is considerent a dict of one element
     def _handle_imports(self) -> None:
         imports: list[dict] = self.config.get("imports", [])
@@ -189,10 +195,13 @@ class ModuleGenerator:
             for key, value in import_.items():
                 if value is None:
                     value = key
-                try:
-                    self.imports[key] = importlib.import_module(value)
-                except ImportError as e:
-                    sys.stderr.write(f"Error while importing {value} as {key}, skipping: {e.msg}")
+
+                self._try_to_import(key, value)
+
+        if "torch" not in self.imports:
+            self._try_to_import("torch", "torch")
+        if "nn" not in self.imports:
+            self._try_to_import("nn", "torch.nn")
 
     # Constructs dynamically an object, that does not have any nested classes
     def _construct_dynamic_class_unnested(self, data_name: str, data: list | dict | None) -> Any:
