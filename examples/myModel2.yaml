@@ -32,7 +32,7 @@ model:
           # index is provided as a list of indexes (mostly if backbone contains sequential, etc...) or you can speficy a name it will change the first match
           # keep in mind replacements are the last thing to execute inside init function
           - backbone:
-                  indexes: [ 1, 1 ]
+                  index: [ 1, 1 ]
                   with: Conv2d
                   kwargs:
                         in_channels: 3
@@ -41,7 +41,7 @@ model:
                         stride: 2
                         padding: 3
           - backbone:
-                  indexes: [ 0, "backbone", "Conv2d" ]
+                  index: [ 0, "backbone", "Conv2d" ]
                   with: Conv2d
                   kwargs:
                         in_channels: 3

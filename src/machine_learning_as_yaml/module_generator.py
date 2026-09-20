@@ -107,7 +107,7 @@ class ModuleGenerator:
 
                 # Traverse throught the indexes except for the last one
                 temp_module: nn.Module = module
-                replacement_indexes: list = replacement_args.get("indexes", [])
+                replacement_indexes: list = replacement_args.get("index", [])
                 for index in replacement_indexes[:-1]:
                     if hasattr(temp_module, "__getitem__"):
                         temp_module = temp_module[index]
