@@ -9,7 +9,7 @@ To make the setup easier, the entire generator lives in a single file named **mo
 So you can either:
 - clone this repository and import it to your project.
 - copy the contents of **module_generator.py** and paste it to you desired file
-- if you are using uv as dependency manager run: uv add ```"machine-learning-as-yaml @ git+https://github.com/TomasBaubllys/MLAY" --branch main```
+- if you are using uv as dependency manager run: ```uv add "machine-learning-as-yaml @ git+https://github.com/TomasBaubllys/MLAY" --branch main```
 
 ## How to use?
 To use the generator, you must first import it
