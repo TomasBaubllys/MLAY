@@ -2,7 +2,7 @@
 This project aims to implement dynamic machine learning model creation for PyTorch through configuration files
 
 ## Why?
-While doing research experiments with PyTorch I have realized that creating a different model/module for each change takes a lot of boiler plate code, which can get messy quite fast. However *yaml* files are a lot more readable and manageable that *python* code.
+While doing research experiments with PyTorch I have realized that creating a different model/module for each change takes a lot of boiler plate code, which can get messy quite fast. However *yaml* files are a lot more readable and manageable than *python* code.
 
 ## Setup guide
 To make the setup easier, the entire generator lives in a single file named **module_generator.py**.
