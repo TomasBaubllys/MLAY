@@ -176,9 +176,13 @@ class ModuleGenerator:
             return has_nested
                 
         if isinstance(constructor_data, dict):
-            for key in constructor_data.keys():
+            has_nested: bool = False
+            for key, value in constructor_data.items():
                 if self._is_class_type(key):
                     return True
+                if isinstance(value, dict):
+                    has_nested = has_nested or self._has_nested_classes(value)
+            return has_nested
 
         return False
 
