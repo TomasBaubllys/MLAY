@@ -46,6 +46,9 @@ imports:
 
     # equivalent to "import matplotlib.pyplot as plt"
     - plt: matplotlib.pyplot
+
+    # equivalent to "import my_custom_lib as cs"
+    - cs: my_custom_lib
 ```
 
 The key is the alias you want to use inside your config, and the value is the actual module path being imported.
@@ -109,7 +112,7 @@ structure:
             - ReLU:
                 inplace: True
 
-            # You can nest other config files inside using the special "MLAY__" keyword
+            # You can nest other config files inside using the special "__MLAY__" keyword
             - __MLAY__: "path_to_another_mlay_config.yaml"
 
             # If you imported a custom library (e.g. cs: my_custom_lib), you can reference its classes here too
