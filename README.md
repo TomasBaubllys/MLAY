@@ -110,11 +110,12 @@ structure:
                 inplace: True
 
             # You can nest other config files inside using the special "MLAY__" keyword
-            - MLAY__: "path_to_another_mlay_config.yaml"
+            - __MLAY__: "path_to_another_mlay_config.yaml"
 
             # If you imported a custom library (e.g. cs: my_custom_lib), you can reference its classes here too
             - cs.MyCustomClass:
                 some_argument: some_value
+                some_module_class: __CLASS_REF__cs.OtherCustomModule
 
     classifier:
         Linear:
@@ -124,7 +125,8 @@ structure:
 
 A few things worth calling out:
 - Values under a layer (like `in_channels`, `num_features`, etc.) map directly to that PyTorch module's constructor arguments.
-- `MLAY__` lets you compose models out of other MLAY YAML configs, so you can build re-usable sub-models and drop them into a bigger one.
+- `__MLAY__` lets you compose models out of other MLAY YAML configs, so you can build re-usable sub-models and drop them into a bigger one.
+- Using `__CLASS_REF__` as a prefix allows you to resolve dynamic class reference, where you want to pass the class itself and not a constructed object
 - Named entries (`backbone`, `classifier`, `custom_block`, etc.) become named submodules on your model, so they show up as `self.backbone`, `self.classifier`, and so on.
 
 #### `forward` / `forward_code`
