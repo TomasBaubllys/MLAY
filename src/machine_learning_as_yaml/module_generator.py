@@ -147,7 +147,7 @@ class ModuleGenerator:
     def _is_class_type(self, data_name: str) -> bool:
         if len(data_name) == 0:
             return False
-        return self._get_class_name(data_name)[0].isupper()
+        return self._get_class_name(data_name)[0].isupper() or data_name.startswith(ModuleGeneratorConstants.CONFIG_CLASS_NAME.value)
 
     def _split_import_path(self, data_name: str) -> list:
         return data_name.strip().split(".")
@@ -161,31 +161,31 @@ class ModuleGenerator:
     # Checks for nested classes, since some constructors may require dictionarys, that may not be classes
     def _has_nested_classes(self, constructor_data: dict | list) -> bool:
         if isinstance(constructor_data, list):
-            has_nested: bool = False
             for value in constructor_data:
                 if isinstance(value, dict):
                     for child_key, child_value in value.items():
                         if self._is_class_type(child_key):
-                            has_nested = True
+                            return True
 
-                        has_nested = has_nested or self._has_nested_classes(child_value)
+                        if self._has_nested_classes(child_value):
+                            return True
 
-                elif isinstance(value, list):
-                    has_nested = has_nested or self._has_nested_classes(value)
+                elif isinstance(value, list) and self._has_nested_classes(value):
+                    return True
 
                 elif self._is_class_type(value):
                     return True
 
-            return has_nested
+            return False
                 
         if isinstance(constructor_data, dict):
-            has_nested: bool = False
             for key, value in constructor_data.items():
                 if self._is_class_type(key):
                     return True
-                if isinstance(value, dict):
-                    has_nested = has_nested or self._has_nested_classes(value)
-            return has_nested
+                if isinstance(value, dict | list):
+                    if self._has_nested_classes(value):
+                        return True
+            return False
 
         return False
 
@@ -261,6 +261,8 @@ class ModuleGenerator:
 
     # Constructs a dynamic object, automatically resolves nesting
     def _construct_dynamic_class(self, data_name: str, data: list | dict | None) -> object:
+        print(data)
+        print(data_name)
         if not self._is_class_type(data_name):
             return data
         if not self._has_nested_classes(data):
