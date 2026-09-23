@@ -248,8 +248,8 @@ class ModuleGenerator:
                     if value.startswith(ModuleGeneratorConstants.CONFIG_CLASS_REF.value):
                         # remove the constant
                         data_name: str = value.removeprefix(ModuleGeneratorConstants.CONFIG_CLASS_REF.value)
-                        DynamicClass: type = self._resolve_dynamic_class_import(data_name)
-                        resolved_data[key] = DynamicClass
+                        DynamicSubClass: type = self._resolve_dynamic_class_import(data_name)
+                        resolved_data[key] = DynamicSubClass
 
                     continue
                 resolved_data[key] = value
