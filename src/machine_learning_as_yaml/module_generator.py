@@ -9,7 +9,10 @@ from enum import Enum
 
 class ModuleGeneratorConstants(Enum):
     # This name is reserved for including other config files inside your config file as generators
-    CONFIG_CLASS_NAME: str = "MLAY__"
+    CONFIG_CLASS_NAME: str = "__MLAY__"
+
+    # Any string that begins with this prefix will be treated as a class reference, and the constructor wont be called
+    CONFIG_CLASS_REF: str = "__CLASS_REF__"
 
 class ModuleGenerator:
     def __init__(self, config_file: str):
@@ -207,6 +210,20 @@ class ModuleGenerator:
         if "nn" not in self.imports:
             self._try_to_import("nn", "torch.nn")
 
+    def _resolve_dynamic_class_import(self, data_name: str) -> type:
+        class_name: str = self._get_class_name(data_name)
+        import_path: str = self._get_parent_import(data_name)
+        # If no import path is provided assume it is a torch.nn import
+        if not import_path or import_path == data_name:
+            import_path = "nn"
+            
+        # Else its some custom import, that we need to get the import of
+        importer: Any = self.imports[import_path]
+        if not importer:
+            raise ImportError(f"Import {import_path} not found in imported modules!")
+
+        return getattr(importer, class_name)
+
     # Constructs dynamically an object, that does not have any nested classes
     def _construct_dynamic_class_unnested(self, data_name: str, data: list | dict | None) -> Any:
         class_name: str = self._get_class_name(data_name)
@@ -218,25 +235,22 @@ class ModuleGenerator:
             submodule_object: nn.Module = SubModuleClass(**module_generator._get_init_args())
             return submodule_object
 
-        import_path: str = self._get_parent_import(data_name)
-        # If no import path is provided assume it is a torch.nn import
-        if not import_path or import_path == data_name:
-            import_path = "nn"
-            
-        # Else its some custom import, that we need to get the import of
-        importer: Any = self.imports[import_path]
-        if not importer:
-            raise ImportError(f"Import {import_path} not found in imported modules!")
-
-        DynamicClass: Any = getattr(importer, class_name)
+        DynamicClass: Any = self._resolve_dynamic_class_import(data_name)
         if isinstance(data, dict):
 
             constants: dict = self._get_constants()
             resolved_data: dict = {}
 
             for key, value in data.items():
-                if isinstance(value, str) and value in constants:
-                    resolved_data[key] = constants[value]
+                if isinstance(value, str):
+                    if value in constants:
+                        resolved_data[key] = constants[value]
+                    if value.startswith(ModuleGeneratorConstants.CONFIG_CLASS_REF.value):
+                        # remove the constant
+                        data_name: str = value.removeprefix(ModuleGeneratorConstants.CONFIG_CLASS_REF.value)
+                        DynamicClass: type = self._resolve_dynamic_class_import(data_name)
+                        resolved_data[key] = DynamicClass
+
                     continue
                 resolved_data[key] = value
             return DynamicClass(**resolved_data)
