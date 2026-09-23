@@ -145,6 +145,9 @@ class ModuleGenerator:
 
     # All types that start with upper case are considered classes and should start with upper case letter
     def _is_class_type(self, data_name: str) -> bool:
+        if not isinstance(data_name, str):
+            return False
+
         if len(data_name) == 0:
             return False
         return self._get_class_name(data_name)[0].isupper() or data_name.startswith(ModuleGeneratorConstants.CONFIG_CLASS_NAME.value)
@@ -261,8 +264,6 @@ class ModuleGenerator:
 
     # Constructs a dynamic object, automatically resolves nesting
     def _construct_dynamic_class(self, data_name: str, data: list | dict | None) -> object:
-        print(data)
-        print(data_name)
         if not self._is_class_type(data_name):
             return data
         if not self._has_nested_classes(data):
