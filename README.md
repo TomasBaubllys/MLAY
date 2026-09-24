@@ -174,7 +174,7 @@ replace:
 
 - `with` is the class to replace the target layer with.
 - `kwargs` are the constructor arguments passed to that new layer.
-- `index` can mix numeric indexes and names to walk through nested structures (e.g. `[0, "backbone", "Conv2d"]` to reach into a nested `MLAY__` submodule).
+- `index` can mix numeric indexes and names to walk through nested structures (e.g. `[0, "backbone", "Conv2d"]` to reach into a nested `__MLAY__` submodule).
 
 ## Examples
-More complete, ready-to-run examples — including nested models composed with `MLAY__` and layer patching with `replace` — are available in the [`examples/`](./examples) folder.
+More complete, ready-to-run examples — including nested models composed with `__MLAY__` and layer patching with `replace` — are available in the [`examples/`](./examples) folder.
