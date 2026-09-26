@@ -80,9 +80,9 @@ class ModuleGenerator:
             with open(base_file, "r") as bsf:
                 base_file_data: dict = yaml.safe_load(bsf)
 
-            self._deep_merge(accumulated, base_file_data)
+            accumulated = self._deep_merge(accumulated, base_file_data)
 
-        self._deep_merge(accumulated, self.config)
+        self.config = self._deep_merge(accumulated, self.config)
 
     def _construct_forward(self) -> callable:
         # Case when forward is provided as set of modules
