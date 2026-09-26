@@ -56,7 +56,7 @@ class ModuleGenerator:
     # Keep in minds data1 gets modified
     def _deep_merge(self, data1: dict | list, data2: dict | list) -> dict:
         if type(data1) is not type(data2):
-            data2
+            return data2
 
         if isinstance(data2, dict):
             for key, value in data2.items():
