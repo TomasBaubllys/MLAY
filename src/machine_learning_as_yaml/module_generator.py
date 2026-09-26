@@ -52,6 +52,24 @@ class ModuleGenerator:
 
         return self._construct_class()
 
+    # Merges data1 onto data2 recursively, meaning if there are conflicts data2 is the source of truth
+    # Keep in minds data1 gets modified
+    def _deep_merge(self, data1: dict | list, data2: dict | list) -> dict:
+        if type(data1) is not type(data2):
+            data2
+
+        if isinstance(data2, dict):
+            for key, value in data2.items():
+                if key in data1:
+                    data1[key] = self._deep_merge(data1[key], value)
+                else:
+                    data1[key] = value
+
+        if isinstance(data2, list):
+            data1.extend(data2)
+
+        return data1            
+
     def _handle_base_files(self) -> None:
         base_files: list [str] = self.config.get("base_files", None)
         if not base_files:
@@ -60,9 +78,9 @@ class ModuleGenerator:
         accumulated: dict = {}
         for base_file in base_files:
             with open(base_file, "r") as bsf:
-                base_file_data: dict = yaml.safe_load(base_file)
+                base_file_data: dict = yaml.safe_load(bsf)
 
-            accumulated = accumulated | base_file_data
+            self._deep_merge(accumulated, base_file_data)
 
         self.config = accumulated | self.config
 
