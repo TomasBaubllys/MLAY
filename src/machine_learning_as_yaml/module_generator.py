@@ -236,7 +236,7 @@ class ModuleGenerator:
         for key, value in imports.items():
             if value is None:
                 value = key
-                self._try_to_import(key, value)
+            self._try_to_import(key, value)
 
         if "torch" not in self.imports:
             self._try_to_import("torch", "torch")
