@@ -65,7 +65,8 @@ class ModuleGenerator:
                     data1[key] = self._deep_merge(data1[key], value)
                 else:
                     data1[key] = deepcopy(value)
-
+            return data1
+        
         return deepcopy(data2)
 
     def _handle_base_files(self) -> None:
