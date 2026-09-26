@@ -5,6 +5,7 @@ from typing import Any, Type
 import importlib
 import sys
 
+from copy import deepcopy
 from enum import Enum
 
 class ModuleGeneratorConstants(Enum):
@@ -54,21 +55,18 @@ class ModuleGenerator:
 
     # Merges data1 onto data2 recursively, meaning if there are conflicts data2 is the source of truth
     # Keep in minds data1 gets modified
-    def _deep_merge(self, data1: dict | list, data2: dict | list) -> dict:
+    def _deep_merge(self, data1: dict | list, data2: dict | list) -> dict | list:
         if type(data1) is not type(data2):
-            return data2
+            return deepcopy(data2)
 
         if isinstance(data2, dict):
             for key, value in data2.items():
                 if key in data1:
                     data1[key] = self._deep_merge(data1[key], value)
                 else:
-                    data1[key] = value
+                    data1[key] = deepcopy(value)
 
-        if isinstance(data2, list):
-            data1.extend(data2)
-
-        return data1            
+        return deepcopy(data2)
 
     def _handle_base_files(self) -> None:
         base_files: list [str] = self.config.get("base_files", None)
