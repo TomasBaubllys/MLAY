@@ -82,7 +82,7 @@ class ModuleGenerator:
 
             self._deep_merge(accumulated, base_file_data)
 
-        self.config = accumulated | self.config
+        self._deep_merge(self.config, self.config)
 
     def _construct_forward(self) -> callable:
         # Case when forward is provided as set of modules
