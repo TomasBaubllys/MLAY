@@ -232,12 +232,10 @@ class ModuleGenerator:
 
     # Each import is considerent a dict of one element
     def _handle_imports(self) -> None:
-        imports: list[dict] = self.config.get("imports", [])
-        for import_ in imports:
-            for key, value in import_.items():
-                if value is None:
-                    value = key
-
+        imports: dict[dict] = self.config.get("imports", {})
+        for key, value in imports.items():
+            if value is None:
+                value = key
                 self._try_to_import(key, value)
 
         if "torch" not in self.imports:

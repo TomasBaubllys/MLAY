@@ -42,13 +42,13 @@ Used to import any custom library your model needs. By default `torch` and `torc
 ```yaml
 imports:
     # equivalent to "import numpy as np"
-    - np: numpy
+    np: numpy
 
     # equivalent to "import matplotlib.pyplot as plt"
-    - plt: matplotlib.pyplot
+    plt: matplotlib.pyplot
 
     # equivalent to "import my_custom_lib as cs"
-    - cs: my_custom_lib
+    cs: my_custom_lib
 ```
 
 The key is the alias you want to use inside your config, and the value is the actual module path being imported.

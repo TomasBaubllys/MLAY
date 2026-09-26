@@ -1,6 +1,6 @@
 imports:
-    - torch:
-    - nn: torch.nn
+    torch:
+    nn: torch.nn
 
 constants:
       num_classes: 10
