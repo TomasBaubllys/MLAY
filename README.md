@@ -176,5 +176,19 @@ replace:
 - `kwargs` are the constructor arguments passed to that new layer.
 - `index` can mix numeric indexes and names to walk through nested structures (e.g. `[0, "backbone", "Conv2d"]` to reach into a nested `__MLAY__` submodule).
 
+#### `base_files`
+Lets you you merge items from earlier files into the current config
+```yaml
+base_files:
+    - file1.yaml
+    - file2.yaml
+    - file3.yaml
+```
+
+The hierarchy is as follows:
+file2.yaml definitions will override file1.yaml (if there are any clashing definitions)
+file3.yaml definitions will override file2.yaml and file1.yaml
+the current config file will override all the file definitions (if there are any multiple definitions). 
+
 ## Examples
 More complete, ready-to-run examples — including nested models composed with `__MLAY__` and layer patching with `replace` — are available in the [`examples/`](./examples) folder.

@@ -20,6 +20,7 @@ class ModuleGenerator:
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
+        self._handle_base_files()
         self.imports: dict[str, object] = {}
         self._handle_imports()
         self.ConstructedClass: nn.Module = None
@@ -50,6 +51,20 @@ class ModuleGenerator:
             return self.ConstructedClass
 
         return self._construct_class()
+
+    def _handle_base_files(self) -> None:
+        base_files: list [str] = self.config.get("base_files", None)
+        if not base_files:
+            return 
+
+        accumulated: dict = {}
+        for base_file in base_files:
+            with open(base_file, "r") as bsf:
+                base_file_data: dict = yaml.safe_load(base_file)
+
+            accumulated = accumulated | base_file_data
+
+        self.config = accumulated | self.config
 
     def _construct_forward(self) -> callable:
         # Case when forward is provided as set of modules
