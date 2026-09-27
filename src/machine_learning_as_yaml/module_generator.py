@@ -18,6 +18,7 @@ class ModuleGeneratorConstants(Enum):
 class ModuleGenerator:
     def __init__(self, config_file: str):
         self.config: dict = {}
+        self.config_file: str = self.config_file
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
